@@ -366,313 +366,313 @@ void setup()
 
  }
 
-int main(void)
-{
-	//Karl start
-	setup();
+   int main(void)
+   {
+	   //Karl start
+	   setup();
 
-	while(1) {	//replaces "loop" in Arduino code, fast loop reading climb etc
+	   while(1) {	//replaces "loop" in Arduino code, fast loop reading climb etc
 
-		static long uRelAltitude = 0;
-		static long uAbsAltitude = 0;
-		static bool setStartAltitude = false;
-		static float lastVariofilter = 0;
-		static long lastAltitude = 0;
-		static long avTemp = 0;
-		static long avVario = 0;
-		static long avPressure = 0;
-		static long startAltitude = 0;
-		static uint8_t numVario = 0;
-		static long avAltitude = 0;
-		int drift = 0;
-		long curAltitude;
-		long uPressure;
-		int uTemperature;
-		long uVario;
-		// Read sensormodule values
+		   static long uRelAltitude = 0;
+		   static long uAbsAltitude = 0;
+		   static bool setStartAltitude = false;
+		   static float lastVariofilter = 0;
+		   static long lastAltitude = 0;
+		   static long avTemp = 0;
+		   static long avVario = 0;
+		   static long avPressure = 0;
+		   static long startAltitude = 0;
+		   static uint8_t numVario = 0;
+		   static long avAltitude = 0;
+		   int drift = 0;
+		   long curAltitude;
+		   long uPressure;
+		   int uTemperature;
+		   long uVario;
+		   // Read sensormodule values
 		   /*while(1) {
 			   variosensor.GetClimb(&uVario);
 		   	   Serial.println(variosensor.GetTemp());
 		   	   Serial.printf("Pressure %8.2f\n",variosensor.GetPressure());
 		   	   delay(200);
 		      }
-		      */
+		    */
 
-		if (variosensor.GetClimb(&uVario, pressureSensor.smoothingValue, pressureSensor.normpress)) {
-			numVario += 1;
-			avVario += uVario;
-			avAltitude += variosensor.GetAltitude();
-			//Serial.printf("Alt(cm) %6.2f \r\n", float(avAltitude/numVario));
-			avTemp += variosensor.GetTemp()*10;
-			avPressure += variosensor.GetPressure();
+		   if (variosensor.GetClimb(&uVario, pressureSensor.smoothingValue, pressureSensor.normpress)) {
+			   numVario += 1;
+			   avVario += uVario;
+			   avAltitude += variosensor.GetAltitude();
+			   //Serial.printf("Alt(cm) %6.2f \r\n", float(avAltitude/numVario));
+			   avTemp += variosensor.GetTemp()*10;
+			   avPressure += variosensor.GetPressure();
 
-		}
+		   }
 #ifdef UNIT_US
-		// EU to US conversions
-		// ft/s = m/s / 0.3048
-		// inHG = hPa * 0,029529983071445
-		// ft = m / 0.3048
-		uVario /= 0.3048;
-		uPressure *= 0.029529983071445;
-		uTemperature = uTemperature * 1.8 + 320;
+		   // EU to US conversions
+		   // ft/s = m/s / 0.3048
+		   // inHG = hPa * 0,029529983071445
+		   // ft = m / 0.3048
+		   uVario /= 0.3048;
+		   uPressure *= 0.029529983071445;
+		   uTemperature = uTemperature * 1.8 + 320;
 #endif
 
 
 
-		// analog input
+		   // analog input
 #ifdef SUPPORT_MAIN_DRIVE
-		if(currentSensor){
-			// Voltage
-			float cuVolt = readAnalog_mV(getVoltageSensorTyp(),VOLTAGE_PIN)/1000.0;
-			jetiEx.SetSensorValue( ID_VOLTAGE, cuVolt*10);
+		   if(currentSensor){
+			   // Voltage
+			   float cuVolt = readAnalog_mV(getVoltageSensorTyp(),VOLTAGE_PIN)/1000.0;
+			   jetiEx.SetSensorValue( ID_VOLTAGE, cuVolt*10);
 
-			// Current
-			uint16_t ampOffset;
+			   // Current
+			   uint16_t ampOffset;
 
-			if (currentSensor <= APM25_A){
-				ampOffset = Atto_APM_offset;
-			}else if (currentSensor > ACS758_200B){
-				ampOffset = ACS_U_offset;
-			}else{
-				ampOffset = ACS_B_offset;
-			}
+			   if (currentSensor <= APM25_A){
+				   ampOffset = Atto_APM_offset;
+			   }else if (currentSensor > ACS758_200B){
+				   ampOffset = ACS_U_offset;
+			   }else{
+				   ampOffset = ACS_B_offset;
+			   }
 
-			float mVanalogIn = (analogRead(CURRENT_PIN) / 1023.0) * V_REF; // mV
-			float cuAmp = (mVanalogIn - ampOffset) / mVperAmp[currentSensor-1];
-			if (currentSensor > APM25_A){
-				cuAmp *= 5000.0/V_REF;
-			}
+			   float mVanalogIn = (analogRead(CURRENT_PIN) / 1023.0) * V_REF; // mV
+			   float cuAmp = (mVanalogIn - ampOffset) / mVperAmp[currentSensor-1];
+			   if (currentSensor > APM25_A){
+				   cuAmp *= 5000.0/V_REF;
+			   }
 
-			jetiEx.SetSensorValue( ID_CURRENT, cuAmp*10);
+			   jetiEx.SetSensorValue( ID_CURRENT, cuAmp*10);
 
-			// Capacity consumption
-			capacityConsumption += cuAmp/timefactorCapacityConsumption;
-			jetiEx.SetSensorValue( ID_CAPACITY, capacityConsumption);
+			   // Capacity consumption
+			   capacityConsumption += cuAmp/timefactorCapacityConsumption;
+			   jetiEx.SetSensorValue( ID_CAPACITY, capacityConsumption);
 
-			// save capacity and voltage to eeprom
-			if(capacityMode > startup && (millis() - lastTimeCapacity) > CAPACITY_SAVE_INTERVAL){
-				if(cuAmp <= MAX_CUR_TO_SAVE_CAPACITY){
-					int eeAddress = EEPROM_ADRESS_CAPACITY;
-					EEPROM.put(eeAddress, capacityConsumption);
-					eeAddress += sizeof(float);
-					EEPROM.put(eeAddress, cuVolt);
-				}
-				lastTimeCapacity = millis();
-			}
+			   // save capacity and voltage to eeprom
+			   if(capacityMode > startup && (millis() - lastTimeCapacity) > CAPACITY_SAVE_INTERVAL){
+				   if(cuAmp <= MAX_CUR_TO_SAVE_CAPACITY){
+					   int eeAddress = EEPROM_ADRESS_CAPACITY;
+					   EEPROM.put(eeAddress, capacityConsumption);
+					   eeAddress += sizeof(float);
+					   EEPROM.put(eeAddress, cuVolt);
+				   }
+				   lastTimeCapacity = millis();
+			   }
 
-			// Power
-			jetiEx.SetSensorValue( ID_POWER, cuAmp*cuVolt);
-		}
+			   // Power
+			   jetiEx.SetSensorValue( ID_POWER, cuAmp*cuVolt);
+		   }
 #endif
 
 #ifdef SUPPORT_RX_VOLTAGE
-		if(enableRx1){
-			jetiEx.SetSensorValue( ID_RX1_VOLTAGE, readAnalog_mV(Rx1_voltage,RX1_VOLTAGE_PIN)/10);
-		}
+		   if(enableRx1){
+			   jetiEx.SetSensorValue( ID_RX1_VOLTAGE, readAnalog_mV(Rx1_voltage,RX1_VOLTAGE_PIN)/10);
+		   }
 
-		if(enableRx2){
-			jetiEx.SetSensorValue( ID_RX2_VOLTAGE, readAnalog_mV(Rx2_voltage,RX2_VOLTAGE_PIN)/10);
-		}
+		   if(enableRx2){
+			   jetiEx.SetSensorValue( ID_RX2_VOLTAGE, readAnalog_mV(Rx2_voltage,RX2_VOLTAGE_PIN)/10);
+		   }
 #endif
 
 #ifdef SUPPORT_EXT_TEMP
-		if(enableExtTemp){
-			// convert the value to resistance
-			float aIn = 1023.0 / analogRead(TEMPERATURE_PIN) - 1.0;
-			aIn = SERIESRESISTOR / aIn;
+		   if(enableExtTemp){
+			   // convert the value to resistance
+			   float aIn = 1023.0 / analogRead(TEMPERATURE_PIN) - 1.0;
+			   aIn = SERIESRESISTOR / aIn;
 
-			// convert resistance to temperature
-			float steinhart;
-			steinhart = aIn / THERMISTORNOMINAL;                // (R/Ro)
-			steinhart = log(steinhart);                         // ln(R/Ro)
-			steinhart /= BCOEFFICIENT;                          // 1/B * ln(R/Ro)
-			steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15);   // + (1/To)
-			steinhart = 1.0 / steinhart;                        // Invert
-			steinhart -= 273.15 - SELF_HEAT;                    // convert to °C and self-heat compensation
+			   // convert resistance to temperature
+			   float steinhart;
+			   steinhart = aIn / THERMISTORNOMINAL;                // (R/Ro)
+			   steinhart = log(steinhart);                         // ln(R/Ro)
+			   steinhart /= BCOEFFICIENT;                          // 1/B * ln(R/Ro)
+			   steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15);   // + (1/To)
+			   steinhart = 1.0 / steinhart;                        // Invert
+			   steinhart -= 273.15 - SELF_HEAT;                    // convert to °C and self-heat compensation
 
 #ifdef UNIT_US
-			// EU to US conversions
-			steinhart = steinhart * 1.8 + 320;
+			   // EU to US conversions
+			   steinhart = steinhart * 1.8 + 320;
 #endif
 
-			jetiEx.SetSensorValue( ID_EXT_TEMP, steinhart*10);
-		}
+			   jetiEx.SetSensorValue( ID_EXT_TEMP, steinhart*10);
+		   }
 #endif
 
 
-		if((millis() - lastTime) > MEASURING_INTERVAL){
-//		if(1) {
-			lastTime = millis();
-			//Serial.println(numVario);
-			if (numVario) {
-				uVario = avVario/numVario;
-				uPressure = avPressure/numVario;
-				uTemperature = avTemp/numVario;
-				curAltitude = avAltitude/numVario;
-				avVario=0;
-				avPressure = 0;
-				avTemp = 0;
-				avAltitude = 0;
-				//numVario = 0;
-			}
-			//Serial.printf("Alt(cm) %6.2f \n", float(curAltitude));
 
-			jetiEx.SetSensorValue( ID_VARIO, uVario );
-			jetiEx.SetSensorValue( ID_PRESSURE, uPressure );
-			jetiEx.SetSensorValue( ID_TEMPERATURE, uTemperature );
+		   //Serial.println(numVario);
+		   if (numVario) { //average vario values while waiting for doJetiSend
+			   uVario = avVario/numVario;
+			   uPressure = avPressure/numVario;
+			   uTemperature = avTemp/numVario;
+			   curAltitude = avAltitude/numVario;
 
-			if (!setStartAltitude  ) {
-				// Set start-altitude in sensor-start
-				if ((numVario > 0) ) {  //schon Werte da?
-					setStartAltitude = true;
-					startAltitude = curAltitude;
-					//Serial.printf("startAlt(cm) %6.2f Curalt %6.2f \r\n", float(startAltitude), float(curAltitude));
-					lastAltitude = curAltitude;
-				}
+		   }
+		   //Serial.printf("Alt(cm) %6.2f \n", float(curAltitude));
 
-			}else{
-				// Altitude
-				uRelAltitude = (curAltitude - startAltitude) / 10;
-				uAbsAltitude = curAltitude / 100;
-			}
-			numVario = 0;
-			//Serial.printf("climb (cm/s) %6.2f  RelAlt(cm) %8.2f AbsAlt(m) %8.2f Pressure %8.2f  \r\n", float(uVario)/100.0,  float(uRelAltitude*10.),float(uAbsAltitude), float(uPressure));
+		   jetiEx.SetSensorValue( ID_VARIO, uVario );
+		   jetiEx.SetSensorValue( ID_PRESSURE, uPressure );
+		   jetiEx.SetSensorValue( ID_TEMPERATURE, uTemperature );
+
+		   if (!setStartAltitude  ) {
+			   // Set start-altitude in sensor-start
+			   if ((numVario > 0) ) {  //schon Werte da?
+				   setStartAltitude = true;
+				   startAltitude = curAltitude;
+				   //Serial.printf("startAlt(cm) %6.2f Curalt %6.2f \r\n", float(startAltitude), float(curAltitude));
+				   lastAltitude = curAltitude;
+			   }
+
+		   }else{
+			   // Altitude
+			   uRelAltitude = (curAltitude - startAltitude) / 10;
+			   uAbsAltitude = curAltitude / 100;
+		   }
+
+		   //Serial.printf("climb (cm/s) %6.2f  RelAlt(cm) %8.2f AbsAlt(m) %8.2f Pressure %8.2f  \r\n", float(uVario)/100.0,  float(uRelAltitude*10.),float(uAbsAltitude), float(uPressure));
 
 #ifdef SUPPORT_GPS
-			if(gpsSettings.mode != GPS_disabled){
+		   if(gpsSettings.mode != GPS_disabled){
 
-				static int homeSetCount = 0;
-				static float home_lat;
-				static float home_lon;
-				static float last_lat;
-				static float last_lon;
-				static long lastAbsAltitude = 0;
-				static unsigned long tripDist;
-				unsigned long distToHome;
+			   static int homeSetCount = 0;
+			   static float home_lat;
+			   static float home_lon;
+			   static float last_lat;
+			   static float last_lon;
+			   static long lastAbsAltitude = 0;
+			   static unsigned long tripDist;
+			   unsigned long distToHome;
 
-				// read data from GPS
-				while(gpsSerial.available() )
-				{
-					char c = gpsSerial.read();
-				//	Serial.print(c);
-					if(gps.encode(c)){
-						break;
-					}else{
-						//return ;
-					}
-				}
+			   // read data from GPS
+			   while(gpsSerial.available() )
+			   {
+				   char c = gpsSerial.read();
+				   //	Serial.print(c);
+				   if(gps.encode(c)){
+					   break;
+				   }else{
+					   //return ;
+				   }
+			   }
 
 
-				if (gps.location.isValid() && gps.location.age() < 2000) { // if Fix
+			   if (gps.location.isValid() && gps.location.age() < 2000) { // if Fix
 
-					jetiEx.SetSensorValueGPS( ID_GPSLAT, false, gps.location.lat() );
-					jetiEx.SetSensorValueGPS( ID_GPSLON, true, gps.location.lng() );
+				   jetiEx.SetSensorValueGPS( ID_GPSLAT, false, gps.location.lat() );
+				   jetiEx.SetSensorValueGPS( ID_GPSLON, true, gps.location.lng() );
 
-					// Altitude
-					uAbsAltitude = gps.altitude.meters();
+				   // Altitude
+				   uAbsAltitude = gps.altitude.meters();
 
 #ifdef UNIT_US
-					jetiEx.SetSensorValue( ID_GPSSPEED, gps.speed.mph() );
+				   jetiEx.SetSensorValue( ID_GPSSPEED, gps.speed.mph() );
 #else
-					jetiEx.SetSensorValue( ID_GPSSPEED, gps.speed.kmph() );
+				   jetiEx.SetSensorValue( ID_GPSSPEED, gps.speed.kmph() );
 #endif
 
-					jetiEx.SetSensorValue( ID_HEADING, gps.course.deg() );
+				   jetiEx.SetSensorValue( ID_HEADING, gps.course.deg() );
 
-					if (homeSetCount < 3000) {  // set home position
-						++homeSetCount;
-						home_lat = gps.location.lat();
-						home_lon = gps.location.lng();
-						last_lat = home_lat;
-						last_lon = home_lon;
-						lastAbsAltitude = gps.altitude.meters();
-						tripDist = 0;
-						if(pressureSensor.type == unknown){
-							startAltitude = gps.altitude.meters();
-						}
+				   if (homeSetCount < 3000) {  // set home position
+					   ++homeSetCount;
+					   home_lat = gps.location.lat();
+					   home_lon = gps.location.lng();
+					   last_lat = home_lat;
+					   last_lon = home_lon;
+					   lastAbsAltitude = gps.altitude.meters();
+					   tripDist = 0;
+					   if(pressureSensor.type == unknown){
+						   startAltitude = gps.altitude.meters();
+					   }
 
-					}else{
+				   }else{
 
-						// Rel. Altitude
-						if(pressureSensor.type == unknown){
-							uRelAltitude = (uAbsAltitude - startAltitude)*10;
-						}
+					   // Rel. Altitude
+					   if(pressureSensor.type == unknown){
+						   uRelAltitude = (uAbsAltitude - startAltitude)*10;
+					   }
 
-						// Distance to model
-						distToHome = gps.distanceBetween(
-								gps.location.lat(),
-								gps.location.lng(),
-								home_lat,
-								home_lon);
-						if(gpsSettings.distance3D){
-							distToHome = sqrt(pow(uRelAltitude/10,2) + pow(distToHome,2));
-						}
+					   // Distance to model
+					   distToHome = gps.distanceBetween(
+							   gps.location.lat(),
+							   gps.location.lng(),
+							   home_lat,
+							   home_lon);
+					   if(gpsSettings.distance3D){
+						   distToHome = sqrt(pow(uRelAltitude/10,2) + pow(distToHome,2));
+					   }
 
-						// Course from home to model
-						jetiEx.SetSensorValue( ID_COURSE, gps.courseTo(home_lat,home_lon,gps.location.lat(),gps.location.lng()));
+					   // Course from home to model
+					   jetiEx.SetSensorValue( ID_COURSE, gps.courseTo(home_lat,home_lon,gps.location.lat(),gps.location.lng()));
 
-						// Trip distance
-						float distLast = gps.distanceBetween(
-								gps.location.lat(),
-								gps.location.lng(),
-								last_lat,
-								last_lon);
-						if(gpsSettings.distance3D){
-							distLast = sqrt(pow(uAbsAltitude-lastAbsAltitude,2) + pow(distLast,2));
-							lastAbsAltitude = uAbsAltitude;
-						}
-						tripDist += distLast;
-						last_lat = gps.location.lat();
-						last_lon = gps.location.lng();
-					}
+					   // Trip distance
+					   float distLast = gps.distanceBetween(
+							   gps.location.lat(),
+							   gps.location.lng(),
+							   last_lat,
+							   last_lon);
+					   if(gpsSettings.distance3D){
+						   distLast = sqrt(pow(uAbsAltitude-lastAbsAltitude,2) + pow(distLast,2));
+						   lastAbsAltitude = uAbsAltitude;
+					   }
+					   tripDist += distLast;
+					   last_lat = gps.location.lat();
+					   last_lon = gps.location.lng();
+				   }
 
-				} else { // If Fix end
-					jetiEx.SetSensorValueGPS( ID_GPSLAT, false, 0 );
-					jetiEx.SetSensorValueGPS( ID_GPSLON, true, 0 );
-					if(pressureSensor.type == unknown){
-						uRelAltitude = 0;
-						uAbsAltitude = 0;
-					}
+			   } else { // If Fix end
+				   jetiEx.SetSensorValueGPS( ID_GPSLAT, false, 0 );
+				   jetiEx.SetSensorValueGPS( ID_GPSLON, true, 0 );
+				   if(pressureSensor.type == unknown){
+					   uRelAltitude = 0;
+					   uAbsAltitude = 0;
+				   }
 
-					//uAbsAltitude = 0;
-					distToHome = 0;
-					jetiEx.SetSensorValue( ID_COURSE, 0 );
-					jetiEx.SetSensorValue( ID_GPSSPEED, 0 );
-					jetiEx.SetSensorValue( ID_HEADING, 0 );
-				}
+				   //uAbsAltitude = 0;
+				   distToHome = 0;
+				   jetiEx.SetSensorValue( ID_COURSE, 0 );
+				   jetiEx.SetSensorValue( ID_GPSSPEED, 0 );
+				   jetiEx.SetSensorValue( ID_HEADING, 0 );
+			   }
 
-				jetiEx.SetSensorValue( ID_SATS, gps.satellites.value() );
-				jetiEx.SetSensorValue( ID_HDOP, gps.hdop.value());
+			   jetiEx.SetSensorValue( ID_SATS, gps.satellites.value() );
+			   jetiEx.SetSensorValue( ID_HDOP, gps.hdop.value());
 #ifndef UNIT_US
-				//EU units
-				jetiEx.SetSensorValue( ID_TRIP, tripDist/10 );
-				jetiEx.SetSensorValue( ID_DIST, distToHome );
+			   //EU units
+			   jetiEx.SetSensorValue( ID_TRIP, tripDist/10 );
+			   jetiEx.SetSensorValue( ID_DIST, distToHome );
 #endif
 #ifdef UNIT_US
-				//US units
-				jetiEx.SetSensorValue( ID_TRIP, tripDist*0.06213 );
-				jetiEx.SetSensorValue( ID_DIST, distToHome*3.2808399);
+			   //US units
+			   jetiEx.SetSensorValue( ID_TRIP, tripDist*0.06213 );
+			   jetiEx.SetSensorValue( ID_DIST, distToHome*3.2808399);
 #endif
 
-			}
+		   }
 #endif
 
 #ifdef UNIT_US
-			// EU to US conversions
-			// ft/s = m/s / 0.3048
-			// inHG = hPa * 0,029529983071445
-			// ft = m / 0.3048
-			uRelAltitude /= 0.3048;
-			uAbsAltitude /= 0.3048;
+		   // EU to US conversions
+		   // ft/s = m/s / 0.3048
+		   // inHG = hPa * 0,029529983071445
+		   // ft = m / 0.3048
+		   uRelAltitude /= 0.3048;
+		   uAbsAltitude /= 0.3048;
 #endif
 
-			jetiEx.SetSensorValue( ID_ALTREL, uRelAltitude );
-			jetiEx.SetSensorValue( ID_ALTABS, uAbsAltitude );
+		   jetiEx.SetSensorValue( ID_ALTREL, uRelAltitude );
+		   jetiEx.SetSensorValue( ID_ALTABS, uAbsAltitude );
 
 #ifdef SUPPORT_JETIBOX_MENU
-			HandleMenu();
+		   HandleMenu();
 #endif
-			jetiEx.DoJetiSend();
-		}
-	}
-}
+		   if (jetiEx.DoJetiSend()) { //if sent, clear averages
+			   avVario=0;
+			   avPressure = 0;
+			   avTemp = 0;
+			   avAltitude = 0;
+			   numVario = 0;
+		   }
+	   }
+
+   }

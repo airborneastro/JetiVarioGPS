@@ -198,6 +198,7 @@ uint8_t JetiExProtocol::DoJetiSend()
 
     // followed by "simple text" frame
     SendJetiboxTextFrame();
+    return 1; //if really sent
   }
 
   return 0;
