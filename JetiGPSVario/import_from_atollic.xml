@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cdtprojectproperties>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths">
+<language name="S,s,asm">
+<includepath>src</includepath>
+<includepath workspace_path="true">/TeensyCore3</includepath>
+<includepath>Libraries/Device/MK64F12/Include</includepath>
+<includepath>Libraries/CMSIS/Include</includepath>
+<includepath workspace_path="true">/JetiGPSVario/Libraries/EEPROM</includepath>
+<includepath workspace_path="true">/JetiGPSVario/Libraries/TinyGPSPlus</includepath>
+<includepath workspace_path="true">/TeensyCore3/src</includepath>
+
+</language>
+<language name="C Source File">
+<includepath>src</includepath>
+<includepath workspace_path="true">/TeensyCore3</includepath>
+<includepath workspace_path="true">/TeensyCore3/src</includepath>
+<includepath>Libraries/Device/MK64F12/Include</includepath>
+<includepath>Libraries/CMSIS/Include</includepath>
+<includepath workspace_path="true">/JetiGPSVario/Libraries/EEPROM</includepath>
+<includepath workspace_path="true">/JetiGPSVario/Libraries/TinyGPSPlus</includepath>
+
+</language>
+<language name="C++ Source File">
+<includepath>src</includepath>
+<includepath workspace_path="true">/TeensyCore3</includepath>
+<includepath workspace_path="true">/TeensyCore3/src</includepath>
+<includepath>Libraries/Device/MK64F12/Include</includepath>
+<includepath>Libraries/CMSIS/Include</includepath>
+<includepath workspace_path="true">/JetiGPSVario/Libraries/EEPROM</includepath>
+<includepath workspace_path="true">/JetiGPSVario/Libraries/TinyGPSPlus</includepath>
+
+</language>
+<language name="Object File">
+
+</language>
+</section>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.Macros">
+<language name="S,s,asm">
+<macro>
+<name>MK64FX512Vyy12</name><value/>
+</macro>
+<macro>
+<name>__FPU_PRESENT</name><value>1</value>
+</macro>
+<macro>
+<name>F_CPU</name><value>120000000</value>
+</macro>
+<macro>
+<name>__MK64FX512__</name><value/>
+</macro>
+<macro>
+<name>TEENSYDUINO</name><value>130</value>
+</macro>
+<macro>
+<name>USB_SERIAL</name><value/>
+</macro>
+<macro>
+<name>LAYOUT_US_ENGLISH</name><value/>
+</macro>
+<macro>
+<name>ARDUINO</name><value>108</value>
+</macro>
+<macro>
+<name>__rtc_localtime</name><value>0</value>
+</macro>
+
+</language>
+<language name="C Source File">
+<macro>
+<name>__FPU_PRESENT</name><value>1</value>
+</macro>
+<macro>
+<name>__MK64FX512__</name><value/>
+</macro>
+<macro>
+<name>USING_MAKEFILE</name><value/>
+</macro>
+<macro>
+<name>F_CPU</name><value>120000000</value>
+</macro>
+<macro>
+<name>USB_SERIAL</name><value/>
+</macro>
+<macro>
+<name>LAYOUT_US_ENGLISH</name><value/>
+</macro>
+<macro>
+<name>TEENSYDUINO</name><value>130</value>
+</macro>
+<macro>
+<name>MK64FX512Vyy12</name><value/>
+</macro>
+<macro>
+<name>ARDUINO</name><value>108</value>
+</macro>
+
+</language>
+<language name="C++ Source File">
+<macro>
+<name>__FPU_PRESENT</name><value>1</value>
+</macro>
+<macro>
+<name>__MK64FX512__</name><value/>
+</macro>
+<macro>
+<name>USING_MAKEFILE</name><value/>
+</macro>
+<macro>
+<name>F_CPU</name><value>120000000</value>
+</macro>
+<macro>
+<name>USB_SERIAL</name><value/>
+</macro>
+<macro>
+<name>LAYOUT_US_ENGLISH</name><value/>
+</macro>
+<macro>
+<name>TEENSYDUINO</name><value>130</value>
+</macro>
+<macro>
+<name>MK64FX512Vyy12</name><value/>
+</macro>
+<macro>
+<name>ARDUINO</name><value>108</value>
+</macro>
+
+</language>
+<language name="Object File">
+
+</language>
+</section>
+</cdtprojectproperties>
