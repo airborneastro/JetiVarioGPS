@@ -200,8 +200,8 @@ void setup()
 #ifdef JETIEX_DEBUG
   #if defined (CORE_TEENSY) || (__AVR_ATmega32U4__)
     Serial.begin( 38400 );
-   // delay(5000);
-   // Serial.println("Start Vario, wait 5sec");
+    //delay(5000);
+    Serial.println("Start Vario");
   #endif
 #endif
 
@@ -372,8 +372,7 @@ void setup()
 	   setup();
 
 	   while(1) {	//replaces "loop" in Arduino code, fast loop reading climb etc
-
-		   static long uRelAltitude = 0;
+           static long uRelAltitude = 0;
 		   static long uAbsAltitude = 0;
 		   static bool setStartAltitude = false;
 		   static float lastVariofilter = 0;
@@ -666,12 +665,16 @@ void setup()
 #ifdef SUPPORT_JETIBOX_MENU
 		   HandleMenu();
 #endif
+
+
+
 		   if (jetiEx.DoJetiSend()) { //if sent, clear averages
 			   avVario=0;
 			   avPressure = 0;
 			   avTemp = 0;
 			   avAltitude = 0;
 			   numVario = 0;
+
 		   }
 	   }
 
